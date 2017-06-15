@@ -39,7 +39,21 @@ module.exports = function makeRouterWithSockets (io) {
 
   // create a new tweet
   router.post('/tweets', function(req, res, next){
-    
+    client.query('INSERT INTO users (name, picture_url) VALUES ($1, $2)', [req.body.name, null],
+     function (err, result){
+      if (err) return next(err);
+      client.query('SELECT * FROM users WHERE users.name = $1', [req.body.name],
+       function (err, result){
+         if (err) return next(err);
+         const user = result.rows[0];
+         client.query('INSERT INTO tweets (user_id, content) VALUES ($1, $2)', [user.id, req.body.content],
+           function (err, result){
+            if (err) return next(err);
+              res.redirect();
+          });
+        });
+     });
+
     // var newTweet = tweetBank.add(req.body.name, req.body.content);
     // io.sockets.emit('new_tweet', newTweet);
     // res.redirect('/');
